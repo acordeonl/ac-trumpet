@@ -1,0 +1,31 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../ac-view/ac-view.html">
+<link rel="import" href="./trumpet-keys.html">
+<dom-module id="ac-trumpet">
+    <template>
+        <style>
+        </style>
+        <trumpet-keys acLedGroup name='trumpet'>
+        </trumpet-keys>
+    </template>
+    <script>
+        class ACTrumpet extends ACView {
+            static get is() { return 'ac-trumpet'; }
+            static get properties() {return {}}
+            constructor() {
+                super();
+            }
+            ___acV_handleMIDIEvent (e) {
+                this.shadowRoot.querySelector('trumpet-keys').___acV_onMIDIEvent(e);
+            }
+            ready() {
+                super.ready() ;
+                this.___acV_setName('trumpet') ; 
+                this.___acV_setDefaultReverb(30);
+                this.___acV_setDefaultViewPitch(72) ;
+                this.___acV_canRotate(true) ; 
+            }
+        }
+        customElements.define('ac-trumpet', ACTrumpet);
+    </script>
+</dom-module>

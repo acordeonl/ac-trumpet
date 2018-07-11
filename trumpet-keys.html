@@ -1,0 +1,202 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../ac-view/ac-led-group.html">
+<link rel="import" href="../ac-view/view-audio.html">
+<link rel="import" href="./trumpet-key.html">
+
+<dom-module id="trumpet-keys">
+    <template>
+        <style>
+            [playbackNote]{
+                margin-top:12px ; 
+                font-size: 26px ;
+                font-weight: 400 ; 
+                color: var(--ac-led-shadow,gray);
+            }
+            [instrumentNote]{
+                margin-top:35px ; 
+                font-size: 26px ;
+                font-weight: 400 ; 
+                color: var(--ac-led-shadow,gray);
+            }
+            [wrapper]{
+                height: 100%;
+                width: 100%;
+                @apply --layout-center;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+            [trumpet-wrapper]{
+                height: 80vh;
+                width: 100%;
+                margin-top:-50px;
+                @apply --layout-center;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+            [trumpet]{
+                height:200px;
+                width:200px; 
+                @apply --layout-justified;
+                @apply --layout-center;
+            }
+            .vertical [trumpet]{
+                margin-left: -17px ; 
+                margin-top:0px; 
+                @apply --layout-vertical;
+            }
+            .horizontal [trumpet] {
+                margin-top:30px; 
+                margin-left:-20px ;
+                @apply --layout-horizontal-reverse;
+            }
+            [col]{
+                margin-top:0px;
+                height:433px ;
+                @apply --layout-center;
+                @apply --layout-vertical;
+                /* @apply --layout-center-justified; */
+            }
+            [col] *{
+                margin:5px;
+            }
+            [notes]{
+                position: absolute;
+                margin-left:-100px ;
+                margin-top:-80px;
+            }
+            [horizontal-keys]{
+                transform: rotate(15deg) ; 
+                margin-top:-5px ;
+                margin-right:-20px ;
+                @apply --layout-center;
+                @apply --layout-horizontal;
+                width:50px ;
+            }
+            [horizontal-keys]  *{
+                margin: 0 ;
+            }
+        </style>
+        <view-audio channel='0'></view-audio>
+        <div wrapper style='margin-left:14px;'>
+            <div class$="{{_computeRotation(___acV_rotation)}}" trumpet-wrapper>
+                <div trumpet>
+                    <div notes>
+                        <div playbackNote></div>
+                        <div instrumentNote></div>
+                    </div>
+                    <trumpet-key style='visibility: hidden;position: absolute;' acLed ac-id='0' channel='0'></trumpet-key>
+                    <trumpet-key acLed ac-id='3' channel='0'></trumpet-key>
+                    <trumpet-key acLed ac-id='2' channel='0'></trumpet-key>
+                    <trumpet-key acLed ac-id='1' channel='0'></trumpet-key>
+                </div>
+            </div>
+            
+        </div>
+    </template>
+    <script>
+        class TrumpetKeys extends ACLedGroup {
+            static get is() { return 'trumpet-keys'; }
+            static get properties() {return {
+                midiNoteToGUI:{type:Array,value:[]}
+            }}
+            constructor() {
+                super();
+            }
+            ___acV_midiEventToAudioNote (channel, midiNote, origin,initiator) {
+                if (origin.startsWith('___midi_instrument')  || initiator ==='record')
+                    return midiNote ;
+                return this.___acV_midiEventToAudioNoteDefault(channel, midiNote, origin);
+            }
+            ___acV_mapMIDIEventToAcLedId (channel, midiNote, origin ,initiator) {
+                if (origin.startsWith('___midi_instrument') || initiator ==='record') {
+                    if(this.midiNoteToGUI[midiNote - this.___acV_viewPitchDiff] === undefined ) 
+                        return [] ; 
+
+                    return this.midiNoteToGUI[midiNote - this.___acV_viewPitchDiff];
+                }
+
+                if (this.midiNoteToGUI[midiNote  + this.___acV_recordingPitchDiff - this.___acV_viewPitchDiff] === undefined) 
+                    return [] ; 
+                return this.midiNoteToGUI[midiNote  + this.___acV_recordingPitchDiff - this.___acV_viewPitchDiff];
+            }
+            ___acV_mapMIDIEventToAcLedState (channel,midiNote,origin,initiator) {
+                var len ,res = []; 
+                if (origin.startsWith('___midi_instrument') || initiator ==='record') {
+                    if(this.midiNoteToGUI[midiNote - this.___acV_viewPitchDiff] === undefined ) 
+                        return [] ; 
+                    len = this.midiNoteToGUI[midiNote - this.___acV_viewPitchDiff ].length;
+                    for(let i = 0 ; i < len ; i ++ )
+                        res.push(1) ;
+                    return res ;
+                }
+
+                if (this.midiNoteToGUI[midiNote  + this.___acV_recordingPitchDiff - this.___acV_viewPitchDiff] === undefined) 
+                    return [] ; 
+                len = this.midiNoteToGUI[midiNote  + this.___acV_recordingPitchDiff - this.___acV_viewPitchDiff ].length ; 
+                for(let i = 0 ; i < len ; i ++ )
+                    res.push(1) ;
+                return res ;
+            }
+            _computeRotation(rotation) {
+                if (rotation )
+                    return "horizontal";
+                return "vertical";
+            }
+            ready() {
+                super.ready() ;
+                this.midiNoteToGUI = [] ;
+                this.___acV_displayTransposition = true ;
+                
+
+                this.midiNoteToGUI[48] = [0]; // C3
+                this.midiNoteToGUI[49] = [1,2,3]; // C#3
+                this.midiNoteToGUI[50] = [1,3]; // D3
+                this.midiNoteToGUI[51] = [2,3]; // D#3
+                this.midiNoteToGUI[52] = [1,2]; // E3
+                this.midiNoteToGUI[53] = [1]; //  F3
+                this.midiNoteToGUI[54] = [1,2,3]; // F#3
+                this.midiNoteToGUI[55] = [1,3]; // G3
+                this.midiNoteToGUI[56] = [2,3]; // G#3
+                this.midiNoteToGUI[57] = [1,2]; // A3
+                this.midiNoteToGUI[58] = [1]; // Bb3
+                this.midiNoteToGUI[59] = [2]; // B3
+
+                this.midiNoteToGUI[60] = [0]; // C4
+                this.midiNoteToGUI[61] = [1,2,3]; // C#4
+                this.midiNoteToGUI[62] = [1,3]; // D4
+                this.midiNoteToGUI[63] = [2,3]; //  Eb4
+                this.midiNoteToGUI[64] = [1,2]; // E4 
+                this.midiNoteToGUI[65] = [1]; //  F4
+                this.midiNoteToGUI[66] = [2]; // F#4
+                this.midiNoteToGUI[67] = [0]; // G4  
+                this.midiNoteToGUI[68] = [2,3]; // G#4 
+                this.midiNoteToGUI[69] = [1,2]; // A4
+                this.midiNoteToGUI[70] = [1]; // Bb4  
+                this.midiNoteToGUI[71] = [2]; // B4
+
+                this.midiNoteToGUI[72] = [0]; //  C5
+                this.midiNoteToGUI[73] = [1,2]; //  C#5
+                this.midiNoteToGUI[74] = [1]; // D5
+                this.midiNoteToGUI[75] = [2]; // Eb5
+                this.midiNoteToGUI[76] = [0]; // E5
+                this.midiNoteToGUI[77] = [1]; //  F5
+                this.midiNoteToGUI[78] = [2]; // F#5
+                this.midiNoteToGUI[79] = [0]; //  G5
+                this.midiNoteToGUI[80] = [2,3]; // G#5
+                this.midiNoteToGUI[81] = [1,2]; // A5
+                this.midiNoteToGUI[82] = [1]; // Bb5
+                this.midiNoteToGUI[83] = [2]; // B5
+
+                this.midiNoteToGUI[84] = [0]; // C6
+                this.midiNoteToGUI[85] = [2]; // C#6
+                this.midiNoteToGUI[86] = [0]; // D6
+                this.midiNoteToGUI[87] = [2]; // Eb6
+                this.midiNoteToGUI[88] = [0]; // E6
+                this.midiNoteToGUI[89] = [1]; //  F6
+                this.midiNoteToGUI[90] = [2]; // F#6
+                this.midiNoteToGUI[91] = [0]; // G6
+            }
+        }
+        customElements.define('trumpet-keys', TrumpetKeys);
+    </script>
+</dom-module>

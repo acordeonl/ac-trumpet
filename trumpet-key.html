@@ -1,0 +1,61 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../ac-view/ac-led.html">
+
+<dom-module id="trumpet-key">
+    <template>
+        <style>
+            [shadow]{
+                position: absolute;
+                margin-top: 3px;
+                border-radius: 100%;
+                background-color: var(--ac-led-shadow,gray);
+            }
+            [circle]{
+                position: absolute;
+                border-radius: 100%;
+                background-color: var(--content-background,#fafafa);
+            }
+            [acLed] {
+                position: absolute;
+                border-radius: 100%;
+                background-color:gray;
+            }
+        </style>
+        <div style$='width:[[keyWidth]]; height:[[keyHeight]];'>
+            <div shadow style$='width:[[keyWidth]]; height:[[keyHeight]];'></div>
+            <div circle style$='width:[[keyWidth]]; height:[[keyHeight]];'>
+                <!-- <div noteNames style$='display:{{_computeDisplay(___acV_displayingNotes)}} ;'>
+                    [[note]]
+                </div> -->
+            </div>
+            <div acLed style$='width:[[keyWidth]]; height:[[keyHeight]];'>
+                <!-- override default -->
+                <!-- <div note>
+                    F#
+                </div> -->
+            </div>
+        </div>
+    </template>
+    <script>
+        class TrumpetKey extends ACLed {
+            static get is() { return 'trumpet-key'; }
+            static get properties() {return {
+                keyWidth:{type:String,value:'50px'},
+                keyHeight:{type:String,value:'50px'},
+                isSmall:{type:Boolean,value:false}
+            }}
+            constructor() {
+                super();
+            }
+            ready() {
+                super.ready() ;
+                this.___acV_isMonophonic = true ; 
+                if(this.isSmall){
+                    this.keyWidth = '18px';
+                    this.keyHeight = '18px';
+                }
+            }
+        }
+        customElements.define('trumpet-key', TrumpetKey);
+    </script>
+</dom-module>
